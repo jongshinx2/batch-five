@@ -1,24 +1,19 @@
-package com.example.springbatchdownversion.configuration.batch.user;
+package com.example.springbatchdownversion.configuration.batch;
 
-import com.example.springbatchdownversion.common.constants.DomainType;
-import com.example.springbatchdownversion.common.constants.SourceType;
+import com.example.springbatchdownversion.common.factory.CustomJobBuilderFactory;
 import com.example.springbatchdownversion.domain.User;
 import com.example.springbatchdownversion.infrastructure.batch.UserProcessor;
-import com.example.springbatchdownversion.infrastructure.batch.reader.ReaderFactory;
 import jakarta.persistence.EntityManagerFactory;
-import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,21 +27,23 @@ public class UserBatchConfig {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    private final ReaderFactory readerFactory;
+//    private final ReaderFactory readerFactory;
+    private final EntityManagerFactory entityManagerFactory;
 
     public UserBatchConfig(
             JobRepository jobRepository,
             @Qualifier(JPA_TX_MANAGER) PlatformTransactionManager transactionManager,
-            ReaderFactory readerFactory
+            @Qualifier(ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory
     ) {
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
-        this.readerFactory = readerFactory;
+        this.entityManagerFactory = entityManagerFactory;
+        //this.readerFactory = readerFactory;
     }
 
     @Bean
-    public Job sampleJob(Step step) {
-        return new JobBuilder("sampleJob", jobRepository)
+    public Job sampleJob(CustomJobBuilderFactory factory, Step step) {
+        return factory.get("sampleJob")
                 .start(step)
                 .build();
     }
@@ -63,13 +60,23 @@ public class UserBatchConfig {
                 .build();
     }
 
+//    @Bean
+//    @StepScope
+//    public ItemReader<User> reader(
+//            @Value("#{jobParameters['domainType']}") String domainType,
+//            @Value("#{jobParameters['sourceType']}") String sourceType) {
+//        ItemReader<User> reader = readerFactory.get(domainType, sourceType);
+//        return reader;
+//    }
+
     @Bean
-    @StepScope
-    public ItemReader<User> reader(
-            @Value("#{jobParameters['domainType']}") String domainType,
-            @Value("#{jobParameters['sourceType']}") String sourceType) {
-        ItemReader<User> reader = readerFactory.get(domainType, sourceType);
-        return reader;
+    public ItemReader<User> reader() {
+        return new JpaPagingItemReaderBuilder<User>()
+                .name("userItemReader")
+                .entityManagerFactory(entityManagerFactory)
+                .pageSize(100)
+                .queryString("SELECT u FROM User u")
+                .build();
     }
 
     @Bean
