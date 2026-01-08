@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import static com.example.springbatchdownversion.common.constants.BaseConstants.JPA_TX_MANAGER;
+import static com.example.springbatchdownversion.common.constants.BaseConstants.MYBATIS_TX_MANAGER;
 
 @Configuration
 @ConditionalOnClass(JobLauncher.class)
@@ -36,9 +37,10 @@ public class BatchCommonAutoConfiguration {
     @Bean
     public CustomStepBuilderFactory stepBuilderFactory(
             JobRepository jobRepository,
-            @Qualifier(JPA_TX_MANAGER) PlatformTransactionManager transactionManager) {
+            @Qualifier(JPA_TX_MANAGER) PlatformTransactionManager jpaTransactionManager,
+            @Qualifier(MYBATIS_TX_MANAGER) PlatformTransactionManager jdbcTransactionManager) {
 
-        return new CustomStepBuilderFactory(jobRepository, transactionManager);
+        return new CustomStepBuilderFactory(jobRepository, jpaTransactionManager, jdbcTransactionManager);
     }
 
 }

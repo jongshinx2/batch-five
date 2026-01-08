@@ -1,7 +1,7 @@
 package com.example.springbatchdownversion.configuration.batch;
 
-import com.example.springbatchdownversion.common.factory.CustomJobBuilderFactory;
 import com.example.springbatchdownversion.common.factory.CustomStepBuilderFactory;
+import com.example.springbatchdownversion.common.factory.CustomJobBuilderFactory;
 import com.example.springbatchdownversion.domain.User;
 import com.example.springbatchdownversion.infrastructure.batch.UserProcessor;
 import jakarta.persistence.EntityManagerFactory;
@@ -13,12 +13,8 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import static com.example.springbatchdownversion.common.constants.BaseConstants.ENTITY_MANAGER_FACTORY;
-
 
 @RequiredArgsConstructor
 @Configuration
@@ -38,7 +34,7 @@ public class UserBatchConfig {
                                    ItemProcessor<User, User> processor,
                                    ItemWriter<User> writer,
                                    CustomStepBuilderFactory factory) {
-        return factory.createChunkStep("userProcessingStep", 10, User.class, User.class)
+        return factory.createJpaChunkStep("userProcessingStep", 10, User.class, User.class)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
@@ -61,7 +57,7 @@ public class UserBatchConfig {
     }
 
     @Bean
-    public JpaItemWriter<User> writer(@Qualifier(ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
+    public JpaItemWriter<User> writer() {
         JpaItemWriter<User> writer = new JpaItemWriter<>();
         writer.setEntityManagerFactory(entityManagerFactory);
         return writer;
