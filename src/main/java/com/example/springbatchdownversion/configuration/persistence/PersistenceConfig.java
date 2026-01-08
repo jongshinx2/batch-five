@@ -15,7 +15,7 @@ import static com.example.springbatchdownversion.common.constants.BaseConstants.
 import static com.example.springbatchdownversion.common.constants.BaseConstants.DATASOURCE;
 
 @EnableTransactionManagement
-//@Configuration
+@Configuration
 public class PersistenceConfig {
 
     @Primary
