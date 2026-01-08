@@ -17,10 +17,9 @@ public class CustomStepBuilderFactory {
     }
 
     // 자주 쓰는 설정을 미리 정의한 헬퍼 메서드 제공 가능
-    public <I, O> SimpleStepBuilder<I, O> createChunkStep(String name, int chunkSize) {
+    public <I, O> SimpleStepBuilder<I, O> createChunkStep(String name, int chunkSize,
+                                                          Class<I> inputType, Class<O> outputType) {
         return new StepBuilder(name, jobRepository)
-                .<I, O>chunk(chunkSize, transactionManager)
-                .faultTolerant()
-                .retryLimit(3);
+                .<I, O>chunk(chunkSize, transactionManager);
     }
 }
